@@ -86,6 +86,26 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group
 }
 #endif
 
+#ifdef CONFIG_CGROUP_SCHED
+static char group_path[PATH_MAX];
+
+static char *task_group_path(struct task_group *tg)
+{
+	if (autogroup_path(tg, group_path, PATH_MAX))
+		return group_path;
+
+	/*
+	 * May be NULL if the underlying cgroup isn't fully-created yet
+	 */
+	if (!tg->css.cgroup) {
+		group_path[0] = '\0';
+		return group_path;
+	}
+	cgroup_path(tg->css.cgroup, group_path, PATH_MAX);
+	return group_path;
+}
+#endif
+
 static void
 print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
 {
