@@ -11,8 +11,7 @@ static atomic_t autogroup_seq_nr;
 
 static void __init autogroup_init(struct task_struct *init_task)
 {
-	autogroup_default.tg = &init_task_group;
-	init_task_group.autogroup = &autogroup_default;
+	autogroup_default.tg = &root_task_group;
 	kref_init(&autogroup_default.kref);
 	init_rwsem(&autogroup_default.lock);
 	init_task->signal->autogroup = &autogroup_default;
@@ -104,6 +103,11 @@ task_wants_autogroup(struct task_struct *p, struct task_group *tg)
 		return false;
 
 	return true;
+}
+
+static inline bool task_group_is_autogroup(struct task_group *tg)
+{
+	return !!tg->autogroup;
 }
 
 static inline struct task_group *
@@ -224,10 +228,14 @@ void proc_sched_autogroup_show_task(struct task_struct *p, struct seq_file *m)
 {
 	struct autogroup *ag = autogroup_task_get(p);
 
+	if (!task_group_is_autogroup(ag->tg))
+		goto out;
+
 	down_read(&ag->lock);
 	seq_printf(m, "/autogroup-%ld nice %d\n", ag->id, ag->nice);
 	up_read(&ag->lock);
 
+out:
 	autogroup_kref_put(ag);
 }
 #endif /* CONFIG_PROC_FS */
@@ -235,9 +243,7 @@ void proc_sched_autogroup_show_task(struct task_struct *p, struct seq_file *m)
 #ifdef CONFIG_SCHED_DEBUG
 static inline int autogroup_path(struct task_group *tg, char *buf, int buflen)
 {
-	int enabled = ACCESS_ONCE(sysctl_sched_autogroup_enabled);
-
-	if (!enabled || !tg->autogroup)
+	if (!task_group_is_autogroup(tg))
 		return 0;
 
 	return snprintf(buf, buflen, "%s-%ld", "/autogroup", tg->autogroup->id);
