@@ -2215,6 +2215,23 @@ void __init tegra2_init_clocks(void)
 	init_audio_sync_clock_mux();
 }
 
+#ifdef CONFIG_CPU_FREQ
+unsigned long tegra_emc_to_cpu_ratio(unsigned long cpu_rate)
+{
+	/* Vote on memory bus frequency based on cpu frequency */
+	if (cpu_rate >= 816000)
+		return 600000000;	/* cpu 816 MHz, emc max */
+	else if (cpu_rate >= 608000)
+		return 300000000;	/* cpu 608 MHz, emc 150Mhz */
+	else if (cpu_rate >= 456000)
+		return 150000000;	/* cpu 456 MHz, emc 75Mhz */
+	else if (cpu_rate >= 312000)
+		return 100000000;	/* cpu 312 MHz, emc 50Mhz */
+	else
+		return 50000000;	/* emc 25Mhz */
+}
+#endif
+
 #ifdef CONFIG_PM
 static u32 clk_rst_suspend[RST_DEVICES_NUM + CLK_OUT_ENB_NUM +
 			   PERIPH_CLK_SOURCE_NUM + 22];
