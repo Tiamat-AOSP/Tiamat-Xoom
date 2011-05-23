@@ -1,8 +1,9 @@
 VERSION = 2
 PATCHLEVEL = 6
 SUBLEVEL = 36
-EXTRAVERSION = .3
+EXTRAVERSION = .4
 NAME = Flesh-Eating Bats with Fangs
+ARCH=arm
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -331,10 +332,10 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   =
+CFLAGS_MODULE   = -Wno-array-bounds -mtune=cortex-a9 -mfpu=vfpv3-d16
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
+CFLAGS_KERNEL	= -mtune=cortex-a9 -mfpu=vfpv3-d16
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
