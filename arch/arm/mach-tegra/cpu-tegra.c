@@ -54,7 +54,7 @@ static struct cpufreq_frequency_table freq_table[] = {
 	{ 9, 1408000 },
 	{ 10, 1504000 },
 	{ 11, 1600000 },
-	{ 12, 1700000 },
+	{ 12, 1704000 },
 	{ 13, CPUFREQ_TABLE_END },
 };
 
