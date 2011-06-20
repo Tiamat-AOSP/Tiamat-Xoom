@@ -345,6 +345,14 @@ out:
 	return err ? 0 : 1;
 }
 
+#define CMD_ERRORS							\
+	(R1_OUT_OF_RANGE |	/* Command argument out of range */	\
+	 R1_ADDRESS_ERROR |	/* Misaligned address */		\
+	 R1_BLOCK_LEN_ERROR |	/* Transferred block length incorrect */\
+	 R1_WP_VIOLATION |	/* Tried to write to protected block */	\
+	 R1_CC_ERROR |		/* Card controller error */		\
+	 R1_ERROR)		/* General/unknown error */
+
 static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 {
 	struct mmc_blk_data *md = mq->data;
@@ -484,6 +492,22 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 			       brq.stop.resp[0], status);
 		}
 
+		/*
+		 * Check for errors relating to the execution of the
+		 * initial command - such as address errors.  No data
+		 * has been transferred.
+		 */
+		if (brq.cmd.resp[0] & CMD_ERRORS) {
+			pr_err("%s: r/w command failed, status = %#x\n",
+				req->rq_disk->disk_name, brq.cmd.resp[0]);
+			goto cmd_abort;
+		}
+
+		/*
+		 * Everything else is either success, or a data error of some
+		 * kind.  If it was a write, we may have transitioned to
+		 * program mode, which we have to wait for it to complete.
+		 */
 		if (!mmc_host_is_spi(card->host) && rq_data_dir(req) != READ) {
 			do {
 				int err;
@@ -514,7 +538,13 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 #endif
 		}
 
-		if (brq.cmd.error || brq.stop.error || brq.data.error) {
+		if (brq.data.error) {
+			pr_err("%s: error %d transferring data, sector %u, nr %u, cmd response %#x, card status %#x\n",
+				req->rq_disk->disk_name, brq.data.error,
+				(unsigned)blk_rq_pos(req),
+				(unsigned)blk_rq_sectors(req),
+				brq.cmd.resp[0], brq.stop.resp[0]);
+
 			if (rq_data_dir(req) == READ) {
 				/*
 				 * After an error, we redo I/O one sector at a
@@ -567,6 +597,7 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 
 	mmc_release_host(card->host);
 
+cmd_abort:
 	spin_lock_irq(&md->lock);
 	while (ret)
 		ret = __blk_end_request(req, -EIO, blk_rq_cur_bytes(req));
