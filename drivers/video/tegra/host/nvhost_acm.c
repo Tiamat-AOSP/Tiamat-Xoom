@@ -30,7 +30,7 @@
 
 #include "dev.h"
 
-#define ACM_TIMEOUT 1*HZ
+#define ACM_TIMEOUT_MSEC 25
 
 #define DISABLE_3D_POWERGATING
 #define DISABLE_MPE_POWERGATING
@@ -88,7 +88,8 @@ void nvhost_module_idle_mult(struct nvhost_module *mod, int refs)
 	mutex_lock(&mod->lock);
 	if (atomic_sub_return(refs, &mod->refcount) == 0) {
 		BUG_ON(!mod->powered);
-		schedule_delayed_work(&mod->powerdown, ACM_TIMEOUT);
+		schedule_delayed_work(
+			&mod->powerdown, msecs_to_jiffies(ACM_TIMEOUT_MSEC));
 		kick = true;
 	}
 	mutex_unlock(&mod->lock);
@@ -201,9 +202,8 @@ void nvhost_module_suspend(struct nvhost_module *mod)
 	int ret;
 
 	ret = wait_event_timeout(mod->idle, is_module_idle(mod),
-			   ACM_TIMEOUT + msecs_to_jiffies(500));
-	if (ret == 0) {
-		tegra_clk_dump();
+			   msecs_to_jiffies(ACM_TIMEOUT_MSEC + 500));
+	if (ret == 0)
 		nvhost_debug_dump();
 	}
 	flush_delayed_work(&mod->powerdown);
