@@ -574,8 +574,11 @@ static unsigned long tegra_dc_get_emc_rate(struct tegra_dc_win *wins[], int n)
 	 * If the calculated peak BW is bigger than board specified BW, then
 	 * either the above calculation is wrong, or board specified BW is
 	 * wrong.
-	 */
 	WARN_ON(ret > tegra_dc_get_default_emc_clk_rate(dc));
+	 */
+	if (ret > tegra_dc_get_default_emc_clk_rate(dc))
+		if (printk_ratelimit())
+			printk(KERN_INFO "%s: CPK %-7uKHz > BPK %-7luKHz\n", __func__, ret / 1000, tegra_dc_get_default_emc_clk_rate(dc) / 1000);
 
 	return ret;
 }
