@@ -458,9 +458,9 @@ static int cache_maint(struct nvmap_client *client, struct nvmap_handle *h,
 		goto out;
 	}
 
+	wmb();
 	if (h->flags == NVMAP_HANDLE_UNCACHEABLE ||
-	    h->flags == NVMAP_HANDLE_WRITE_COMBINE ||
-	    start == end)
+	    h->flags == NVMAP_HANDLE_WRITE_COMBINE || start == end)
 		goto out;
 
 	if (WARN_ON_ONCE(op == NVMAP_CACHE_OP_WB_INV))
