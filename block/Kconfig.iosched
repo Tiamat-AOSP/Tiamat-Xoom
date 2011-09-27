@@ -44,14 +44,21 @@ config CFQ_GROUP_IOSCHED
 	  Enable group IO scheduling in CFQ.
 
 config IOSCHED_SIO
-        tristate "Simple I/O scheduler"
-        default y
-        ---help---
-          The Simple I/O scheduler is an extremely simple scheduler,
-          based on noop and deadline, that relies on deadlines to
-          ensure fairness. The algorithm does not do any sorting but
-          basic merging, trying to keep a minimum overhead. It is aimed
-          mainly for aleatory access devices (eg: flash devices).
+	tristate "Simple I/O scheduler"
+	default y
+	---help---
+	  The Simple I/O scheduler is an extremely simple scheduler,
+	  based on noop and deadline, that relies on deadlines to
+	  ensure fairness. The algorithm does not do any sorting but
+	  basic merging, trying to keep a minimum overhead. It is aimed
+	  mainly for aleatory access devices (eg: flash devices).
+
+config IOSCHED_VR
+	tristate "V(R) I/O scheduler"
+	default y
+	---help---
+	  Requests are chosen according to SSTF with a penalty of rev_penalty
+	  for switching head direction.
 
 choice
 	prompt "Default I/O scheduler"
@@ -66,11 +73,14 @@ choice
 	config DEFAULT_CFQ
 		bool "CFQ" if IOSCHED_CFQ=y
 
-    config DEFAULT_SIO
-        bool "SIO" if IOSCHED_SIO=y
+	config DEFAULT_SIO
+		bool "SIO" if IOSCHED_SIO=y
 
 	config DEFAULT_NOOP
-		bool "No-op"
+		bool "No-op" if IOSCHED_NOOP=y
+
+	config DEFAULT_VR
+		bool "VR" if IOSCHED_VR=y
 
 endchoice
 
@@ -78,8 +88,9 @@ config DEFAULT_IOSCHED
 	string
 	default "deadline" if DEFAULT_DEADLINE
 	default "cfq" if DEFAULT_CFQ
-    default "sio" if DEFAULT_SIO
+	default "sio" if DEFAULT_SIO
 	default "noop" if DEFAULT_NOOP
+	default "vr" if DEFAULT_VR
 
 endmenu
 
