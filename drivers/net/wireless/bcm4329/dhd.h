@@ -65,6 +65,10 @@
 #endif
 #endif
 
+#ifndef CONFIG_BCM4329_DYNAMIC_MAC
+#define GET_CUSTOM_MAC_ENABLE
+#endif
+
 /* Forward decls */
 struct dhd_bus;
 struct dhd_prot;
