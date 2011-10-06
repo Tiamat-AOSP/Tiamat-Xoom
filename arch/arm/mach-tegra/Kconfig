@@ -131,3 +131,7 @@ config TEGRA_THERMAL_THROTTLE
        default y
        help
          Also requires enabling a temperature sensor such as NCT1008.
+
+config TEGRA2_GPUOC
+    bool "Overclock the 3d GPU clock by 100mhz to 400mhz."
+    default y
