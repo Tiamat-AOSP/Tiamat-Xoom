@@ -87,13 +87,15 @@ void __init tegra_init_cache(void)
 {
 #ifdef CONFIG_CACHE_L2X0
 	void __iomem *p = IO_ADDRESS(TEGRA_ARM_PERIF_BASE) + 0x3000;
+	u32 aux_ctrl;
 
 	writel(0x331, p + L2X0_TAG_LATENCY_CTRL);
 	writel(0x441, p + L2X0_DATA_LATENCY_CTRL);
 
-	writel(7, p + L2X0_PREFETCH_OFFSET);
-	
-	l2x0_init(p, 0x7C480001, 0x8200c3fe);
+	aux_ctrl = readl(p + L2X0_CACHE_TYPE);
+	aux_ctrl = (aux_ctrl & 0x700) << (17-8);
+	aux_ctrl |= 0x7C000001;
+	l2x0_init(p, aux_ctrl, 0x8200c3fe);
 #endif
 
 }
