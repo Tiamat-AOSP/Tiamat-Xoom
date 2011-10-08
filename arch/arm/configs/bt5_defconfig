@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.36.4
-# Thu Oct  6 01:34:10 2011
+# Fri Oct  7 20:47:13 2011
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1066,6 +1066,7 @@ CONFIG_WLAN=y
 CONFIG_BCM4329=m
 CONFIG_BCM4329_FW_PATH="/vendor/firmware/fw_bcm4329.bin"
 CONFIG_BCM4329_NVRAM_PATH="/system/etc/wifi/bcm4329.cal"
+CONFIG_BCM4329_DYNAMIC_MAC=y
 # CONFIG_HOSTAP is not set
 
 #
@@ -1077,7 +1078,7 @@ CONFIG_BCM4329_NVRAM_PATH="/system/etc/wifi/bcm4329.cal"
 #
 # CONFIG_USB_CATC is not set
 # CONFIG_USB_KAWETH is not set
-# CONFIG_USB_PEGASUS is not set
+CONFIG_USB_PEGASUS=m
 # CONFIG_USB_RTL8150 is not set
 CONFIG_USB_USBNET=y
 CONFIG_USB_NET_AX8817X=y
