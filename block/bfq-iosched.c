@@ -59,6 +59,7 @@
 #include <linux/elevator.h>
 #include <linux/rbtree.h>
 #include <linux/ioprio.h>
+#include <linux/blk_types.h>
 #include "bfq.h"
 
 /* Max number of dispatches in one round of service. */
