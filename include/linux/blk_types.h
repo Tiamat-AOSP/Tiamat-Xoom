@@ -110,6 +110,32 @@ struct bio {
 
 #endif /* CONFIG_BLOCK */
 
+enum bio_rw_flags {
+	BIO_RW,
+	BIO_RW_FAILFAST_DEV,
+	BIO_RW_FAILFAST_TRANSPORT,
+	BIO_RW_FAILFAST_DRIVER,
+	/* above flags must match REQ_* */
+	BIO_RW_AHEAD,
+	BIO_RW_BARRIER,
+	BIO_RW_SYNCIO,
+	BIO_RW_UNPLUG,
+	BIO_RW_META,
+	BIO_RW_DISCARD,
+	BIO_RW_NOIDLE,
+};
+
+/*
+ * First four bits must match between bio->bi_rw and rq->cmd_flags, make
+ * that explicit here.
+ */
+#define BIO_RW_RQ_MASK		0xf
+
+static inline bool bio_rw_flagged(struct bio *bio, enum bio_rw_flags flag)
+{
+	return (bio->bi_rw & (1 << flag)) != 0;
+}
+
 /*
  * Request flags.  For use in the cmd_flags field of struct request, and in
  * bi_rw of struct bio.  Note that some flags are only valid in either one.
