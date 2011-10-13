@@ -170,7 +170,9 @@ enum rq_flag_bits {
 	__REQ_QUIET,		/* don't worry about errors */
 	__REQ_PREEMPT,		/* set for "ide_preempt" requests */
 	__REQ_ORDERED_COLOR,	/* is before or after barrier */
+	__REQ_RW_SYNC,		/* request is sync (sync write or read) */
 	__REQ_ALLOCED,		/* request came from our alloc pool */
+	__REQ_RW_META,		/* metadata io request */
 	__REQ_COPY_USER,	/* contains copies of user pages */
 	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
 	__REQ_FLUSH,		/* request for cache flush */
@@ -180,6 +182,7 @@ enum rq_flag_bits {
 	__REQ_NR_BITS,		/* stops here */
 };
 
+#define REQ_RW			(1 << __REQ_RW)
 #define REQ_WRITE		(1 << __REQ_WRITE)
 #define REQ_FAILFAST_DEV	(1 << __REQ_FAILFAST_DEV)
 #define REQ_FAILFAST_TRANSPORT	(1 << __REQ_FAILFAST_TRANSPORT)
@@ -211,6 +214,8 @@ enum rq_flag_bits {
 #define REQ_QUIET		(1 << __REQ_QUIET)
 #define REQ_PREEMPT		(1 << __REQ_PREEMPT)
 #define REQ_ORDERED_COLOR	(1 << __REQ_ORDERED_COLOR)
+#define REQ_RW_SYNC		(1 << __REQ_RW_SYNC)
+#define REQ_RW_META		(1 << __REQ_RW_META)
 #define REQ_ALLOCED		(1 << __REQ_ALLOCED)
 #define REQ_COPY_USER		(1 << __REQ_COPY_USER)
 #define REQ_INTEGRITY		(1 << __REQ_INTEGRITY)
