@@ -531,6 +531,10 @@ static const struct usb_device_id qc_vidpids[] = {
 		USB_DEVICE_AND_INTERFACE_INFO(0x22B8, 0x2A70, 0xff, 0xfb, 0xff), /* Motorola Xoom */
 		.driver_info = (unsigned long)&qc_netinfo
 	},
+	{
+		USB_DEVICE_AND_INTERFACE_INFO(0x22B8, 0x4267, 0xff, 0xfb, 0xff), /* Motorola Xoom */
+		.driver_info = (unsigned long)&qc_netinfo
+	},
 	{ }
 };
 

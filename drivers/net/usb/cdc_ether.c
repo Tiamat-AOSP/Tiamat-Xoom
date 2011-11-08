@@ -490,7 +490,7 @@ static int oob_wake_cdc_bind(struct usbnet *dev, struct usb_interface *intf)
 }
 
 static const struct driver_info	oob_wake_cdc_info = {
-	.description =	"CDC Wakeable Ethernet Device",
+	.description =	"Motorola Wrigley LTE CDC Ethernet Device",
 	.flags =	FLAG_ETHER,
 	.bind =		oob_wake_cdc_bind,
 	.unbind =	oob_wake_cdc_unbind,
