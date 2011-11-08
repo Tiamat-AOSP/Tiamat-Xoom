@@ -203,7 +203,7 @@ void nvhost_module_suspend(struct nvhost_module *mod)
 
 	ret = wait_event_timeout(mod->idle, is_module_idle(mod),
 			   msecs_to_jiffies(ACM_TIMEOUT_MSEC + 500));
-	if (ret == 0)
+	if (ret == 0) {
 		nvhost_debug_dump();
 	}
 	flush_delayed_work(&mod->powerdown);
