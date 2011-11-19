@@ -92,7 +92,7 @@ static inline void gizmo_writel(unsigned long value, unsigned long offset)
 
 static u32 ahb_gizmo[29];
 
-#ifdef CONFIG_PM
+/*#ifdef CONFIG_PM
 int tegra_ahbgizmo_suspend(void)
 {
 	ahb_gizmo[0] = gizmo_readl(AHB_ARBITRATION_DISABLE);
@@ -162,7 +162,7 @@ void tegra_ahbgizmo_resume(void)
 #else
 #define tegra_ahbgizmo_suspend NULL
 #define tegra_ahbgizmo_resume NULL
-#endif
+#endif */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0))
 static struct syscore_ops tegra_ahbgizmo_syscore_ops = {
