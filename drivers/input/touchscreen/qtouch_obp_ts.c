@@ -894,6 +894,10 @@ static int do_touch_multi_msg(struct qtouch_ts_data *ts, struct qtm_object *obj,
 				 ts->finger_data[i].y_data);
 		input_report_abs(ts->input_dev, ABS_MT_ORIENTATION,
 				 ts->finger_data[i].vector);
+        input_report_abs(ts->input_dev, ABS_MT_PRESSURE,
+                 ts->finger_data[i].z_data);
+        input_report_key(ts->input_dev, BTN_TOUCH,
+                 (ts->finger_data[i].z_data == 0) ? 0 : 1 );
 		input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID,
 				 i);
 		input_mt_sync(ts->input_dev);
