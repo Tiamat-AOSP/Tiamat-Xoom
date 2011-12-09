@@ -55,6 +55,10 @@ static int lowmem_minfree_size = 4;
 static struct task_struct *lowmem_deathpending;
 static unsigned long lowmem_deathpending_timeout;
 
+DEFINE_SPINLOCK(lowmem_lock);
+
+#define PAGESZ_KB (PAGE_SIZE / 1024)
+
 #define lowmem_print(level, x...)			\
 	do {						\
 		if (lowmem_debug_level >= (level))	\
@@ -85,7 +89,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 	struct task_struct *selected = NULL;
 	int rem = 0;
 	int tasksize;
-	int i;
+	int i, banner = 0;
 	int min_adj = OOM_ADJUST_MAX + 1;
 	int selected_tasksize = 0;
 	int selected_oom_adj;
@@ -117,7 +121,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 		}
 	}
 	if (nr_to_scan > 0)
-		lowmem_print(3, "lowmem_shrink %d, %x, ofree %d %d, ma %d\n",
+		lowmem_print(3, "lowmem_shrink %d, mask %X, ofree %d ofile %d, min_adj %d\n",
 			     nr_to_scan, gfp_mask, other_free, other_file,
 			     min_adj);
 	rem = global_page_state(NR_ACTIVE_ANON) +
@@ -131,7 +135,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 	}
 	selected_oom_adj = min_adj;
 
-	read_lock(&tasklist_lock);
+	spin_lock(&lowmem_lock);
 	for_each_process(p) {
 		struct mm_struct *mm;
 		struct signal_struct *sig;
@@ -163,13 +167,24 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 		selected = p;
 		selected_tasksize = tasksize;
 		selected_oom_adj = oom_adj;
-		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
-			     p->pid, p->comm, oom_adj, tasksize);
+		if(!banner++) {
+			int i;
+			lowmem_print(2, "min_adj: %2d LMK params: ", min_adj);
+			for (i = 0; i < max(lowmem_minfree_size, lowmem_adj_size); i++) {
+				lowmem_print(2, "%2d:%6luK ",
+				i < lowmem_adj_size ? lowmem_adj[i] : -1,
+				i < lowmem_minfree_size ? lowmem_minfree[i] * PAGESZ_KB : 0);
+			}
+			lowmem_print(2, "\n");
+		};
+		lowmem_print(2, "select %d (%s), adj %d, size %d (%luK), to kill\n",
+			     p->pid, p->comm, oom_adj, tasksize, tasksize * PAGESZ_KB);
 	}
 	if (selected) {
-		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d\n",
+		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d (%luK)\n",
 			     selected->pid, selected->comm,
-			     selected_oom_adj, selected_tasksize);
+			     selected_oom_adj, selected_tasksize,
+			     selected_tasksize * PAGESZ_KB);
 		lowmem_deathpending = selected;
 		lowmem_deathpending_timeout = jiffies + HZ;
 		force_sig(SIGKILL, selected);
@@ -177,7 +192,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 	}
 	lowmem_print(4, "lowmem_shrink %d, %x, return %d\n",
 		     nr_to_scan, gfp_mask, rem);
-	read_unlock(&tasklist_lock);
+	spin_unlock(&lowmem_lock);
 	return rem;
 }
 
@@ -210,4 +225,3 @@ module_init(lowmem_init);
 module_exit(lowmem_exit);
 
 MODULE_LICENSE("GPL");
-
