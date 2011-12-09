@@ -169,9 +169,10 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 		selected_oom_adj = oom_adj;
 		if(!banner++) {
 			int i;
-			lowmem_print(2, "min_adj: %2d LMK params: ", min_adj);
+			lowmem_print(2, "NTS:%7luK MA:%3d MFs:",
+				nr_to_scan * PAGESZ_KB, min_adj);
 			for (i = 0; i < max(lowmem_minfree_size, lowmem_adj_size); i++) {
-				lowmem_print(2, "%2d:%6luK ",
+				lowmem_print(2, "%3d:%6luK",
 				i < lowmem_adj_size ? lowmem_adj[i] : -1,
 				i < lowmem_minfree_size ? lowmem_minfree[i] * PAGESZ_KB : 0);
 			}
