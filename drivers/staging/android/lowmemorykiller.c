@@ -52,6 +52,8 @@ static size_t lowmem_minfree[6] = {
 };
 static int lowmem_minfree_size = 4;
 
+static uint32_t lowmem_multiplier = 32;
+
 static struct task_struct *lowmem_deathpending;
 static unsigned long lowmem_deathpending_timeout;
 
@@ -97,6 +99,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 	int other_free = global_page_state(NR_FREE_PAGES);
 	int other_file = global_page_state(NR_FILE_PAGES) -
 						global_page_state(NR_SHMEM);
+	unsigned lowmem_delta = 262144;	/* 1GB system RAM, in pages */
 
 	/*
 	 * If we already have a death outstanding, then
@@ -140,6 +143,7 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 		struct mm_struct *mm;
 		struct signal_struct *sig;
 		int oom_adj;
+		unsigned delta;
 
 		task_lock(p);
 		mm = p->mm;
@@ -160,9 +164,15 @@ static int lowmem_shrink(struct shrinker *s, int nr_to_scan, gfp_t gfp_mask)
 		if (selected) {
 			if (oom_adj < selected_oom_adj)
 				continue;
-			if (oom_adj == selected_oom_adj &&
-			    tasksize <= selected_tasksize)
+
+			delta = abs((nr_to_scan * lowmem_multiplier) - tasksize);
+			lowmem_print(3, "%s: l_delta %u delta %u nr_to_scan * mult %u tasksize %u\n",
+				__func__, lowmem_delta, delta,
+				nr_to_scan * lowmem_multiplier, tasksize);
+			if ((oom_adj == selected_oom_adj) && (delta > lowmem_delta))
 				continue;
+			if(delta <= lowmem_delta)
+				lowmem_delta = delta;
 		}
 		selected = p;
 		selected_tasksize = tasksize;
@@ -221,6 +231,7 @@ module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
 module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
 			 S_IRUGO | S_IWUSR);
 module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+module_param_named(multiplier, lowmem_multiplier, uint, S_IRUGO | S_IWUSR);
 
 module_init(lowmem_init);
 module_exit(lowmem_exit);
